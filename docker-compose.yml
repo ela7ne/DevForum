@@ -1,0 +1,32 @@
+services:
+  couchdb:
+    image: couchdb:3
+    environment:
+      - COUCHDB_USER=ela7ne
+      - COUCHDB_PASSWORD=bunnycat
+    ports:
+      - "5984:5984"
+    volumes:
+      - ./init-couchdb.sh:/docker-entrypoint-initdb.d/init-couchdb.sh
+      - couchdata:/opt/couchdb/data
+
+  backend:
+    build: .
+    ports:
+      - "3001:3001"
+    environment:
+      - COUCHDB_URL=http://ela7ne:bunnycat@couchdb:5984
+    depends_on:
+      - couchdb
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - REACT_APP_BACKEND_URL=http://backend:3001
+    depends_on:
+      - backend
+
+volumes:
+  couchdata: {}
